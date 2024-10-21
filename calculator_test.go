@@ -36,6 +36,7 @@ func TestCalc(t *testing.T) {
 		{"2*2)", 0, ErrMismatchedParentheses},
 		{"1+2*3-", 0, ErrInvalidExpression},
 		{"", 0, ErrEmptyExpression},
+		{"(8/4+5-2)/10", 0.5, nil},
 	}
 
 	for _, tc := range cases {
