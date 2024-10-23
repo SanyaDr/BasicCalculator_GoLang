@@ -1,8 +1,48 @@
 package main
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 )
+
+func TestCalculateSimple(t *testing.T) {
+	cases := []struct {
+		inp  string
+		want float64
+	}{
+		{"2+2+2+2", 8},
+		{"2+2*2", 6},
+		{"2*2-2*2", 0},
+		{"2*2/4*2*51", 102},
+		{"2/4", 0.5},
+		{"2+2-5+6*34/10-20+5.59", 4.99},
+	}
+
+	for _, c := range cases {
+		got, _ := calculateSimple(c.inp)
+		temp, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", got), 64)
+		if temp != c.want {
+			t.Errorf("simplifyParentheses(%v);  -->   got: %v; want %v", c.inp, got, c.want)
+		}
+	}
+}
+
+func TestParentheses(t *testing.T) {
+	cases := []struct {
+		inp  string
+		want string
+	}{
+		{"1+(5+(2+1)*3)+7", "1+14+7"},
+	}
+
+	for _, c := range cases {
+		got, _ := simplifyParentheses(c.inp)
+		if got != c.want {
+			t.Errorf("simplifyParentheses(%q);  -->   got: %q; want %q", c.inp, got, c.want)
+		}
+	}
+}
 
 func TestCalc(t *testing.T) {
 
