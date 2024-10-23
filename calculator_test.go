@@ -1,14 +1,8 @@
 package main
 
 import (
-	"errors"
 	"testing"
 )
-
-var ErrDivisionByZero error = errors.New("division by zero")              // Деление на 0
-var ErrMismatchedParentheses error = errors.New("mismatched parentheses") // Пропущена круглая скобка в выражении
-var ErrInvalidExpression error = errors.New("invalid expression")         // Недопустимое выражение. Пропущен знак или цифра
-var ErrEmptyExpression error = errors.New("empty expression")             // Пустое выражение
 
 func TestCalc(t *testing.T) {
 
@@ -37,6 +31,15 @@ func TestCalc(t *testing.T) {
 		{"1+2*3-", 0, ErrInvalidExpression},
 		{"", 0, ErrEmptyExpression},
 		{"(8/4+5-2)/10", 0.5, nil},
+		{"(((2*2))", 0, ErrMismatchedParentheses},
+		{"()(2*2))", 0, ErrMismatchedParentheses},
+		{"(((2*2))", 0, ErrMismatchedParentheses},
+		{")()2*2))", 0, ErrMismatchedParentheses},
+		{"((2*2)))", 0, ErrMismatchedParentheses},
+		{"2*2(", 0, ErrMismatchedParentheses},
+		{")2*2)", 0, ErrMismatchedParentheses},
+		{")2*2", 0, ErrMismatchedParentheses},
+		{"     5+4  -4-2", 3, nil},
 	}
 
 	for _, tc := range cases {
