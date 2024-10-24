@@ -7,10 +7,6 @@ import (
 	"strings"
 )
 
-func degugWatcher(val uint8) string {
-	return strconv.Itoa(int(val))
-}
-
 var ErrDivisionByZero error = errors.New("division by zero")              // Деление на 0
 var ErrMismatchedParentheses error = errors.New("mismatched parentheses") // Пропущена круглая скобка в выражении
 var ErrInvalidExpression error = errors.New("invalid expression")         // Недопустимое выражение. Пропущен знак или цифра
@@ -170,12 +166,17 @@ func simplifyParentheses(inp string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		res := inp[:parFirstOpen] + fmt.Sprintf("%v", num) + inp[parLastClose+1:]
-		inp = res
 
-		//inp[parFirstOpen:parLastClose+1] = simpleExp
+		inp = inp[:parFirstOpen] + fmt.Sprintf("%v", num) + inp[parLastClose+1:]
 	}
 
+	/*
+		num, err := calculateSimple(inp)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s", num), nil
+	*/
 	return inp, nil
 
 	//
@@ -216,17 +217,66 @@ func simplifyParentheses(inp string) (string, error) {
 }
 
 func Calc(expression string) (float64, error) {
-	//// Проверим что выражение не пустое
+	// Проверим что выражение не пустое
+	if len(expression) == 0 {
+		return 0, ErrEmptyExpression
+	}
 	expression = simplifySpaces(expression)
-	if !strings.ContainsAny(expression, "()") {
-		ans, err := calculateSimple(expression)
+
+	parOpenCount, parCloseCount := 0, 0
+	parFirstOpen, parLastClose := 0, 0
+	// ищем срез внутри скобок ->
+	// если скобок нет то кидаем хуйню в s1mple
+	// возвращаем ответ
+
+	//var res string
+	//	1+(5+(3)*3)+7
+	for i := 0; i < len(expression); i++ {
+		cur := expression[i]
+		if cur == '(' {
+			parOpenCount++
+			if parOpenCount == 1 {
+				parFirstOpen = i
+			}
+		}
+		if cur == ')' {
+			parCloseCount++
+			if parCloseCount == parOpenCount {
+				parLastClose = i
+			}
+		}
+	}
+	if parOpenCount != parCloseCount {
+		return 0, ErrMismatchedParentheses
+	}
+	if parOpenCount > 0 {
+		simpleExp, err := simplifyParentheses(expression[parFirstOpen+1 : parLastClose])
+		if err != nil {
+			return 0, ErrInvalidExpression
+		}
+		num, err := calculateSimple(simpleExp)
 		if err != nil {
 			return 0, err
 		}
-		return ans, nil
+
+		expression = expression[:parFirstOpen] + fmt.Sprintf("%v", num) + expression[parLastClose+1:]
 	}
 
-	expression, _ = simplifyParentheses(expression)
+	res, err := calculateSimple(expression)
+	if err != nil {
+		return 0, err
+	}
+	return res, nil
+
+	//if !strings.ContainsAny(expression, "()") {
+	//	ans, err := calculateSimple(expression)
+	//	if err != nil {
+	//		return 0, err
+	//	}
+	//	return ans, nil
+	//}else{
+	//
+	//}
 
 	/*
 		1+(5+(3)*3)+7
@@ -272,20 +322,5 @@ func Calc(expression string) (float64, error) {
 }
 
 func main() {
-	//temp := fmt.Sprintf("%v", 3.0)
-	//fmt.Println(temp)
-	fmt.Println(simplifyParentheses("1+(5+(3)*3)+7"))
 
-	//inp := "1+(5+(3)*3)+7"
-	//parFirstOpen, parLastClose := 2, 10
-	//fmt.Println(inp[parFirstOpen+1 : parLastClose])
-	//fmt.Println(calculateSimple("2+2-5+6*34/10-20+5.59"))
-	//fmt.Println(strings.FieldsFunc("2+2+2-4+2", separatorOperator))
-
-	//str := "1+(5+(2+1)*3)+7" // 22
-
-	//fmt.Println(str[6:9]) //2+1
-	// [i:j] --> i вкл, j не вкл
-
-	//fmt.Println(Calc(str))
 }
