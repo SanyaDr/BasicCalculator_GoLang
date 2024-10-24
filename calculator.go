@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"unicode"
 )
+
+func degugWatcher(val uint8) string {
+	return strconv.Itoa(int(val))
+}
 
 var ErrDivisionByZero error = errors.New("division by zero")              // Деление на 0
 var ErrMismatchedParentheses error = errors.New("mismatched parentheses") // Пропущена круглая скобка в выражении
@@ -112,11 +115,6 @@ func calculateSimple(inp string) (float64, error) {
 	}
 	//если приоритетных операций больше нет
 	for len(numbers) != 1 {
-		/*
-		  numbers[0] = Calc(numbers[0], numbers[1], operators[0]);
-		  numbers.RemoveAt(1);
-		  operators.RemoveAt(0);
-		*/
 		numbers[0], err = calculate(numbers[0], numbers[1], operators[0])
 		if err != nil {
 			return 0, err
@@ -136,49 +134,99 @@ func calculateSimple(inp string) (float64, error) {
 */
 
 func simplifyParentheses(inp string) (string, error) {
+
 	parOpenCount, parCloseCount := 0, 0
 	parFirstOpen, parLastClose := 0, 0
-	var res string
-	//readyToRead := false
+	// ищем срез внутри скобок ->
+	// если скобок нет то кидаем хуйню в s1mple
+	// возвращаем ответ
+
+	//var res string
+	//	1+(5+(3)*3)+7
 	for i := 0; i < len(inp); i++ {
 		cur := inp[i]
-		// Если текущий != скобка
-		if cur != '(' && cur != ')' {
-			// то переписываем как есть
-			res += string(cur)
-		} else if cur == '(' {
-			parOpenCount++
-			parFirstOpen = i
-		} else if cur == ')' {
-			parCloseCount++
-			if parOpenCount == parCloseCount {
-				parLastClose = i
-				temp, err := simplifyParentheses(inp[parFirstOpen : parLastClose+1])
-				if err != nil {
-					return "", ErrInvalidExpression
-				}
-				fmt.Println(temp)
-			}
-		}
-
-		if cur == ')' && parOpenCount == 0 {
-			return "", ErrMismatchedParentheses
-		}
 		if cur == '(' {
 			parOpenCount++
-			//readyToRead = true
-			continue
-		} else if cur == ')' {
-
+			if parOpenCount == 1 {
+				parFirstOpen = i
+			}
+		}
+		if cur == ')' {
+			parCloseCount++
+			if parCloseCount == parOpenCount {
+				parLastClose = i
+			}
 		}
 	}
-	return "123", nil
+	if parOpenCount != parCloseCount {
+		return "", ErrMismatchedParentheses
+	}
+	if parOpenCount > 0 {
+		simpleExp, err := simplifyParentheses(inp[parFirstOpen+1 : parLastClose])
+		if err != nil {
+			return "", ErrInvalidExpression
+		}
+		num, err := calculateSimple(simpleExp)
+		if err != nil {
+			return "", err
+		}
+		res := inp[:parFirstOpen] + fmt.Sprintf("%v", num) + inp[parLastClose+1:]
+		inp = res
+
+		//inp[parFirstOpen:parLastClose+1] = simpleExp
+	}
+
+	return inp, nil
+
+	//
+	////readyToRead := false
+	//for i := 0; i < len(inp); i++ {
+	//	cur := inp[i]
+	//	// Если текущий != скобка
+	//	if cur != '(' && cur != ')' {
+	//		// то переписываем как есть
+	//		res += string(cur)
+	//	} else if cur == '(' {
+	//		parOpenCount++
+	//		parFirstOpen = i
+	//	} else if cur == ')' {
+	//		parCloseCount++
+	//		if parOpenCount == parCloseCount {
+	//			parLastClose = i
+	//			temp, err := simplifyParentheses(inp[parFirstOpen+1 : parLastClose])
+	//			if err != nil {
+	//				return "", ErrInvalidExpression
+	//			}
+	//			fmt.Println(temp)
+	//		}
+	//	}
+	//
+	//	if cur == ')' && parOpenCount == 0 {
+	//		return "", ErrMismatchedParentheses
+	//	}
+	//	if cur == '(' {
+	//		parOpenCount++
+	//		//readyToRead = true
+	//		continue
+	//	} else if cur == ')' {
+	//
+	//	}
+	//}
+	//return "123", nil
 }
 
 func Calc(expression string) (float64, error) {
 	//// Проверим что выражение не пустое
-	//expression = simplifySpaces(expression)
-	//expression = simplifyParentheses(expression)
+	expression = simplifySpaces(expression)
+	if !strings.ContainsAny(expression, "()") {
+		ans, err := calculateSimple(expression)
+		if err != nil {
+			return 0, err
+		}
+		return ans, nil
+	}
+
+	expression, _ = simplifyParentheses(expression)
 
 	/*
 		1+(5+(3)*3)+7
@@ -187,15 +235,6 @@ func Calc(expression string) (float64, error) {
 		15+7
 		22
 	*/
-
-	l := len(expression)
-	for i := 0; i < l; i++ {
-		cur := expression[i] // Текущий символ
-		// Если это число то
-		if unicode.IsDigit(rune(cur)) {
-
-		}
-	}
 
 	//Проверим корректность скобок
 	//if checkParentheses(expression) == false {
@@ -233,7 +272,14 @@ func Calc(expression string) (float64, error) {
 }
 
 func main() {
-	fmt.Println(calculateSimple("2+2-5+6*34/10-20+5.59"))
+	//temp := fmt.Sprintf("%v", 3.0)
+	//fmt.Println(temp)
+	fmt.Println(simplifyParentheses("1+(5+(3)*3)+7"))
+
+	//inp := "1+(5+(3)*3)+7"
+	//parFirstOpen, parLastClose := 2, 10
+	//fmt.Println(inp[parFirstOpen+1 : parLastClose])
+	//fmt.Println(calculateSimple("2+2-5+6*34/10-20+5.59"))
 	//fmt.Println(strings.FieldsFunc("2+2+2-4+2", separatorOperator))
 
 	//str := "1+(5+(2+1)*3)+7" // 22

@@ -17,6 +17,10 @@ func TestCalculateSimple(t *testing.T) {
 		{"2*2/4*2*51", 102},
 		{"2/4", 0.5},
 		{"2+2-5+6*34/10-20+5.59", 4.99},
+		{"3+r-14+ghrkfjd01", 0},
+		{"234/0*2423", 0},
+		{"534%432&23!21", 0},
+		{"32++23443-1212*2", 0},
 	}
 
 	for _, c := range cases {
@@ -80,6 +84,20 @@ func TestCalc(t *testing.T) {
 		{")2*2)", 0, ErrMismatchedParentheses},
 		{")2*2", 0, ErrMismatchedParentheses},
 		{"     5+4  -4-2", 3, nil},
+		{"2+2+2+2", 8, nil},
+		{"2+2*2", 6, nil},
+		{"2*2-2*2", 0, nil},
+		{"2*2/4*2*51", 102, nil},
+		{"2/4", 0.5, nil},
+		{"2+2-5+6*34/10-20+5.59", 4.99, nil},
+		{"3+r-14+ghrkfjd01", 0, ErrDivisionByZero},
+		{"234/0*2423", 0, ErrDivisionByZero},
+		{"534%432&23!21", 0, ErrDivisionByZero},
+		{"32++23443-1212*2", 0, ErrDivisionByZero},
+		{"2", 2, nil},
+		{"+", 0, ErrInvalidExpression},
+		{"*", 0, ErrInvalidExpression},
+		{"1+(5+(2+1)*3)+7", 22, nil},
 	}
 
 	for _, tc := range cases {
