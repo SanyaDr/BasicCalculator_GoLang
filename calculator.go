@@ -267,60 +267,8 @@ func Calc(expression string) (float64, error) {
 		return 0, err
 	}
 	return res, nil
-
-	//if !strings.ContainsAny(expression, "()") {
-	//	ans, err := calculateSimple(expression)
-	//	if err != nil {
-	//		return 0, err
-	//	}
-	//	return ans, nil
-	//}else{
-	//
-	//}
-
-	/*
-		1+(5+(3)*3)+7
-
-		1+(14)+7
-		15+7
-		22
-	*/
-
-	//Проверим корректность скобок
-	//if checkParentheses(expression) == false {
-	// 	return 0, ErrMismatchedParentheses
-	// }
-
-	// str := "(2+(2+2)*2)+2" // 12
-
-	// Количество открытых скобок
-	// parCount := 0
-	// Слайс с индексами скобок --> [индекс открытия скобки]индекс закрытия скобки
-
-	// var parOpen []int
-	// var parClose []int
-	// // lastInd := 0
-	// for i := 0; i < len(expression); i++ {
-	// 	cur := expression[i]
-
-	// if cur == '(' || cur == ')' {
-
-	// 	if cur == ')' && len(parOpen) != 0 /*parCount == 0 */ {
-	// 		return 0, ErrMismatchedParentheses
-
-	// 	} else if cur == '(' {
-	// 		// parCount++
-	// 		parOpen = append(parOpen, i)
-	// 		continue
-
-	// 	} else if cur == ')' {
-	// 		parClose = append(parClose, i)
-	// 	}
-	// }
-
-	return 0, nil
 }
 
 func main() {
-
+	fmt.Println(Calc("((1+(4+5+2)-3)+(6+8)) "))
 }
