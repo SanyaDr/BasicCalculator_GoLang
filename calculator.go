@@ -204,5 +204,7 @@ func main() {
 			"Проверьте текст ошибки!\n\n", err)
 		return
 	}
-	fmt.Println(result)
+	fmt.Printf("Результат: %v\n\n", result)
+	fmt.Println("Работу выполнил: Дровосеков Александр")
+	fmt.Printf("Github: %q", "https://github.com/SanyaDr/BasicCalculator_GoLang.git")
 }
