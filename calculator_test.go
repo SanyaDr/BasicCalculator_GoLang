@@ -78,7 +78,7 @@ func TestCalc(t *testing.T) {
 		{"19", "", 0, ErrEmptyExpression},
 		{"20", "(8/4+5-2)/10", 0.5, nil},
 		{"21", "(((2*2))", 0, ErrMismatchedParentheses},
-		{"22", "()(2*2))", 0, ErrMismatchedParentheses},
+		{"22", "()(2*2)", 0, ErrInvalidExpression},
 		{"23", "(((2*2))", 0, ErrMismatchedParentheses},
 		{"24", ")()2*2))", 0, ErrMismatchedParentheses},
 		{"25", "((2*2)))", 0, ErrMismatchedParentheses},
@@ -100,6 +100,9 @@ func TestCalc(t *testing.T) {
 		{"41", "+", 0, ErrInvalidExpression},
 		{"42", "*", 0, ErrInvalidExpression},
 		{"43", "1+(5+(2+1)*3)+7", 22, nil},
+
+		{"44", "(0)*(2*2))", 0, ErrMismatchedParentheses},
+		{"45", "(2)+(3)+1", 6, nil},
 	}
 
 	for _, tc := range cases {

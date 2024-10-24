@@ -7,10 +7,11 @@ import (
 	"strings"
 )
 
-var ErrDivisionByZero error = errors.New("division by zero")              // Деление на 0
-var ErrMismatchedParentheses error = errors.New("mismatched parentheses") // Пропущена круглая скобка в выражении
-var ErrInvalidExpression error = errors.New("invalid expression")         // Недопустимое выражение. Пропущен знак или цифра
-var ErrEmptyExpression error = errors.New("empty expression")             // Пустое выражение
+var ErrDivisionByZero error = errors.New("division by zero")                         // Деление на 0
+var ErrMismatchedParentheses error = errors.New("mismatched parentheses")            // Пропущена круглая скобка в выражении
+var ErrInvalidExpression error = errors.New("invalid expression")                    // Недопустимое выражение. Пропущен знак или цифра
+var ErrEmptyExpression error = errors.New("empty expression")                        // Пустое выражение
+var ErrUnsupportedOperation error = errors.New("this operation sign is unsupported") // Данная операция не поддерживается
 
 var operatorChars = "+-*/" // Поддерживаемые операции
 var separatorOperator = func(r rune) bool {
@@ -25,7 +26,7 @@ func separateNumbers(inp string) ([]float64, error) {
 		var err error
 		numbers[i], err = strconv.ParseFloat(s, 64)
 		if err != nil {
-			return numbers, err
+			return numbers, ErrInvalidExpression
 		}
 	}
 	return numbers, nil
@@ -68,7 +69,7 @@ func calculate(a, b float64, operation rune) (float64, error) {
 		return a / b, nil
 
 	default:
-		return 0, errors.New("this operation sign is unsupported. got: '%v', operation")
+		return 0, ErrUnsupportedOperation
 	}
 }
 
@@ -121,116 +122,13 @@ func calculateSimple(inp string) (float64, error) {
 	return numbers[0], nil
 }
 
-/*
-	1+(5+(2+1)*3)+7
-
-	1+(14)+7
-	15+7
-	22
-*/
-
-func simplifyParentheses(inp string) (string, error) {
-
+func simplifyParentheses(expression string) (string, error) {
 	parOpenCount, parCloseCount := 0, 0
 	parFirstOpen, parLastClose := 0, 0
 	// ищем срез внутри скобок ->
 	// если скобок нет то кидаем хуйню в s1mple
 	// возвращаем ответ
 
-	//var res string
-	//	1+(5+(3)*3)+7
-	for i := 0; i < len(inp); i++ {
-		cur := inp[i]
-		if cur == '(' {
-			parOpenCount++
-			if parOpenCount == 1 {
-				parFirstOpen = i
-			}
-		}
-		if cur == ')' {
-			parCloseCount++
-			if parCloseCount == parOpenCount {
-				parLastClose = i
-			}
-		}
-	}
-	if parOpenCount != parCloseCount {
-		return "", ErrMismatchedParentheses
-	}
-	if parOpenCount > 0 {
-		simpleExp, err := simplifyParentheses(inp[parFirstOpen+1 : parLastClose])
-		if err != nil {
-			return "", ErrInvalidExpression
-		}
-		num, err := calculateSimple(simpleExp)
-		if err != nil {
-			return "", err
-		}
-
-		inp = inp[:parFirstOpen] + fmt.Sprintf("%v", num) + inp[parLastClose+1:]
-	}
-
-	/*
-		num, err := calculateSimple(inp)
-		if err != nil {
-			return "", err
-		}
-		return fmt.Sprintf("%s", num), nil
-	*/
-	return inp, nil
-
-	//
-	////readyToRead := false
-	//for i := 0; i < len(inp); i++ {
-	//	cur := inp[i]
-	//	// Если текущий != скобка
-	//	if cur != '(' && cur != ')' {
-	//		// то переписываем как есть
-	//		res += string(cur)
-	//	} else if cur == '(' {
-	//		parOpenCount++
-	//		parFirstOpen = i
-	//	} else if cur == ')' {
-	//		parCloseCount++
-	//		if parOpenCount == parCloseCount {
-	//			parLastClose = i
-	//			temp, err := simplifyParentheses(inp[parFirstOpen+1 : parLastClose])
-	//			if err != nil {
-	//				return "", ErrInvalidExpression
-	//			}
-	//			fmt.Println(temp)
-	//		}
-	//	}
-	//
-	//	if cur == ')' && parOpenCount == 0 {
-	//		return "", ErrMismatchedParentheses
-	//	}
-	//	if cur == '(' {
-	//		parOpenCount++
-	//		//readyToRead = true
-	//		continue
-	//	} else if cur == ')' {
-	//
-	//	}
-	//}
-	//return "123", nil
-}
-
-func Calc(expression string) (float64, error) {
-	// Проверим что выражение не пустое
-	if len(expression) == 0 {
-		return 0, ErrEmptyExpression
-	}
-	expression = simplifySpaces(expression)
-
-	parOpenCount, parCloseCount := 0, 0
-	parFirstOpen, parLastClose := 0, 0
-	// ищем срез внутри скобок ->
-	// если скобок нет то кидаем хуйню в s1mple
-	// возвращаем ответ
-
-	//var res string
-	//	1+(5+(3)*3)+7
 	for i := 0; i < len(expression); i++ {
 		cur := expression[i]
 		if cur == '(' {
@@ -243,32 +141,57 @@ func Calc(expression string) (float64, error) {
 			parCloseCount++
 			if parCloseCount == parOpenCount {
 				parLastClose = i
+
+				simpleExp, err := simplifyParentheses(expression[parFirstOpen+1 : parLastClose])
+				if err != nil {
+					return "", ErrInvalidExpression
+				}
+				num, err := calculateSimple(simpleExp)
+				if err != nil {
+					return "", err
+				}
+				//i -= len(expression) - len(simpleExp)
+				i -= parLastClose - parFirstOpen
+				expression = expression[:parFirstOpen] + fmt.Sprintf("%v", num) + expression[parLastClose+1:]
+
+				parOpenCount, parCloseCount = 0, 0
 			}
 		}
 	}
 	if parOpenCount != parCloseCount {
-		return 0, ErrMismatchedParentheses
+		return "", ErrMismatchedParentheses
 	}
-	if parOpenCount > 0 {
-		simpleExp, err := simplifyParentheses(expression[parFirstOpen+1 : parLastClose])
-		if err != nil {
-			return 0, ErrInvalidExpression
-		}
-		num, err := calculateSimple(simpleExp)
-		if err != nil {
-			return 0, err
-		}
+	//if parOpenCount > 0 {
+	//	simpleExp, err := simplifyParentheses(expression[parFirstOpen+1 : parLastClose])
+	//	if err != nil {
+	//		return "", ErrInvalidExpression
+	//	}
+	//	num, err := calculateSimple(simpleExp)
+	//	if err != nil {
+	//		return "", err
+	//	}
+	//
+	//	expression = expression[:parFirstOpen] + fmt.Sprintf("%v", num) + expression[parLastClose+1:]
+	//}
 
-		expression = expression[:parFirstOpen] + fmt.Sprintf("%v", num) + expression[parLastClose+1:]
+	return expression, nil
+}
+
+func Calc(expression string) (float64, error) {
+	// Проверим что выражение не пустое
+	if len(expression) == 0 {
+		return 0, ErrEmptyExpression
 	}
+	expression = simplifySpaces(expression)
 
-	res, err := calculateSimple(expression)
+	simple, err := simplifyParentheses(expression)
 	if err != nil {
 		return 0, err
 	}
-	return res, nil
-}
+	res, err := calculateSimple(simple)
+	if err != nil {
+		return 0, err
+	}
 
-func main() {
-	fmt.Println(Calc("((1+(4+5+2)-3)+(6+8)) "))
+	return res, nil
 }
