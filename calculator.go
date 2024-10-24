@@ -183,3 +183,26 @@ func Calc(expression string) (float64, error) {
 
 	return res, nil
 }
+
+func main() {
+	fmt.Println("Приветсвует вас 'Simple Calculator!'")
+	fmt.Println("Введите математическое выражение...\n" +
+		"Поддерживаемые операнды: + - * / ( и )\n" +
+		"Пример: (2+2*2)/0.5\n\nВведите выражение:")
+
+	var input string
+	_, err := fmt.Scan(&input)
+	if err != nil {
+		fmt.Println("Упс.. ошибочка при чтении выражения!\n"+
+			"Пожалуйста попробуйте еще раз!\n", err)
+		return
+	}
+
+	result, err := Calc(input)
+	if err != nil {
+		fmt.Println("Упс.. ошибочка при обработке выражения!\n"+
+			"Проверьте текст ошибки!\n\n", err)
+		return
+	}
+	fmt.Println(result)
+}
