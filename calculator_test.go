@@ -100,9 +100,10 @@ func TestCalc(t *testing.T) {
 		{"41", "+", 0, ErrInvalidExpression},
 		{"42", "*", 0, ErrInvalidExpression},
 		{"43", "1+(5+(2+1)*3)+7", 22, nil},
-
 		{"44", "(0)*(2*2))", 0, ErrMismatchedParentheses},
 		{"45", "(2)+(3)+1", 6, nil},
+		{"46", "10*10-1", 99, nil},
+		{"47", "255*34-166*2", 8338, nil},
 	}
 
 	for _, tc := range cases {

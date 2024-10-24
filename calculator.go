@@ -161,18 +161,6 @@ func simplifyParentheses(expression string) (string, error) {
 	if parOpenCount != parCloseCount {
 		return "", ErrMismatchedParentheses
 	}
-	//if parOpenCount > 0 {
-	//	simpleExp, err := simplifyParentheses(expression[parFirstOpen+1 : parLastClose])
-	//	if err != nil {
-	//		return "", ErrInvalidExpression
-	//	}
-	//	num, err := calculateSimple(simpleExp)
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//
-	//	expression = expression[:parFirstOpen] + fmt.Sprintf("%v", num) + expression[parLastClose+1:]
-	//}
 
 	return expression, nil
 }
